@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudQA — Intelligent Test Automation Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-subtle: #F1F5F9;
+      --border: #E2E8F0;
+      --border-focus: #2563EB;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+      --primary-light: #EFF6FF;
+      --success: #16A34A;
+      --success-light: #F0FDF4;
+      --success-border: #BBF7D0;
+      --danger: #DC2626;
+      --danger-light: #FEF2F2;
+      --danger-border: #FECACA;
+      --warning: #D97706;
+      --warning-light: #FFFBEB;
+      --warning-border: #FDE68A;
+      --radius: 8px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; font-size: 14px; }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-group { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .nav-tabs { display: flex; gap: 4px; background: var(--surface-subtle); padding: 4px; border-radius: var(--radius); }
+    .nav-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-tab.active { background: var(--surface); color: var(--primary); font-weight: 600; box-shadow: var(--shadow-sm); }
+    .status-pill {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+      box-shadow: 0 1px 2px rgba(22, 163, 74, 0.08);
+      transition: all 0.2s ease;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #16A34A;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6);
+      animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+      70% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    }
+
+    /* Main Container Grid (60% / 40%) */
+    main { max-width: 1440px; margin: 20px auto; padding: 0 20px 40px; }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) { .studio-grid { grid-template-columns: 1fr; } }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+      border-color: #CBD5E1;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Forms */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+    .input-text, .textarea-text, .select-text {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      font-size: 0.88rem;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-text:focus, .textarea-text:focus, .select-text:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    .textarea-text { min-height: 85px; resize: vertical; line-height: 1.45; }
+    
+    /* URL Validation Pill (Embedded cleanly inside input wrapper) */
+    .url-validation-pill {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeInPill 0.2s ease-out;
+    }
+    @keyframes fadeInPill {
+      from { opacity: 0; transform: translateY(-50%) scale(0.9); }
+      to { opacity: 1; transform: translateY(-50%) scale(1); }
+    }
+    .url-validation-pill.valid {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+    .url-validation-pill.invalid {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
+    }
+
+    /* Preset Cards Grid (6 cards) */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+    @media (max-width: 768px) { .presets-grid { grid-template-columns: 1fr 1fr; } }
+    .preset-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .preset-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--primary);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .preset-card:hover {
+      border-color: #93C5FD;
+      background: #F8FAFC;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.08);
+    }
+    .preset-card.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 0 1px var(--primary), 0 4px 12px -2px rgba(37, 99, 235, 0.12);
+      transform: translateY(-1px);
+    }
+    .preset-card.active::before {
+      opacity: 1;
+    }
+    .preset-title { font-size: 0.82rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .preset-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    /* Advanced Settings Collapsible */
+    .advanced-bar {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    .toggle-advanced {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .advanced-fields {
+      display: none;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+      background: var(--surface-subtle);
+      padding: 12px;
+      border-radius: var(--radius);
+    }
+
+    /* Actions Bar */
+    .actions-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .btn {
+      padding: 9px 18px;
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      color: #fff;
+      box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+      box-shadow: 0 4px 14px -1px rgba(37, 99, 235, 0.45);
+      transform: translateY(-1px);
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 40%;
+      height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+      transform: rotate(25deg);
+      transition: left 0.75s ease;
+    }
+    .btn-primary:hover::after {
+      left: 120%;
+    }
+    .btn-outline { background: #fff; border-color: var(--border); color: var(--text); }
+    .btn-outline:hover:not(:disabled) { border-color: #94A3B8; background: var(--surface-subtle); transform: translateY(-1px); }
+    .btn-success-outline { background: #fff; border-color: var(--success); color: var(--success); }
+    .btn-success-outline:hover:not(:disabled) { background: var(--success-light); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* What AI Understood Section */
+    .interpretation-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .interp-header { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; color: var(--primary); margin-bottom: 10px; }
+    .interp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.82rem; }
+    .interp-item { background: var(--surface-subtle); padding: 8px 12px; border-radius: 6px; }
+    .interp-label { font-weight: 600; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; margin-bottom: 2px; }
+    .interp-value { color: var(--text); font-weight: 500; }
+    .entity-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .entity-tag { background: #fff; border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; color: var(--text); }
+
+    /* Light Code Editor with Line Numbers */
+    .editor-container {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-subtle);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 0.8rem;
+      overflow: hidden;
+    }
+    .editor-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #E2E8F0;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .editor-body {
+      display: flex;
+      max-height: 250px;
+      overflow-y: auto;
+      background: #FFFFFF;
+    }
+    .line-numbers {
+      padding: 10px 8px;
+      text-align: right;
+      color: #94A3B8;
+      background: #F8FAFC;
+      border-right: 1px solid var(--border);
+      user-select: none;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+    .code-content {
+      padding: 10px 14px;
+      white-space: pre;
+      overflow-x: auto;
+      color: #0F172A;
+      line-height: 1.5;
+      width: 100%;
+    }
+    .token-key { color: #2563EB; font-weight: 500; }
+    .token-str { color: #059669; }
+    .token-num { color: #D97706; }
+    .token-bool { color: #7C3AED; }
+
+    /* Result Summary Banner */
+    .result-card {
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      display: none;
+      animation: slideInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .result-pass { background: var(--success-light); border: 1px solid var(--success-border); color: var(--success); }
+    .result-fail { background: var(--danger-light); border: 1px solid var(--danger-border); color: var(--danger); }
+    .result-blocked { background: var(--warning-light); border: 1px solid var(--warning-border); color: var(--warning); }
+    .result-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1rem; }
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      font-size: 0.8rem;
+    }
+    .metric-col { display: flex; flex-direction: column; }
+    .metric-val { font-size: 1.05rem; font-weight: 700; }
+
+    /* Vertical Execution Timeline */
+    .timeline { position: relative; padding: 10px 0 10px 24px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 14px;
+      bottom: 14px;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-step { position: relative; margin-bottom: 14px; }
+    .timeline-node {
+      position: absolute;
+      left: -24px;
+      top: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .timeline-node.pass {
+      border-color: var(--success);
+      background: var(--success);
+      color: #fff;
+      animation: checkBounce 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes checkBounce {
+      0% { transform: scale(0.6); }
+      70% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .timeline-node.fail { border-color: var(--danger); background: var(--danger); color: #fff; }
+    .timeline-node.blocked { border-color: var(--warning); background: var(--warning); color: #fff; }
+    .timeline-node.running {
+      border-color: var(--primary);
+      background: #fff;
+      color: var(--primary);
+      animation: pulseRadar 1.4s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+    @keyframes pulseRadar {
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+      70% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      transition: all 0.15s ease;
+    }
+    .step-card:hover {
+      border-color: #CBD5E1;
+      background: #FAFAFA;
+    }
+    .step-header { display: flex; justify-content: space-between; align-items: center; }
+    .step-action-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .step-desc { font-weight: 500; color: var(--text); margin-top: 4px; word-break: break-all; }
+    .step-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); }
+    .step-details-toggle { color: var(--primary); cursor: pointer; text-decoration: underline; background: none; border: none; font-size: 0.72rem; }
+    .step-expandable {
+      display: none;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.75rem;
+      background: var(--surface-subtle);
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    /* Intelligent Locator Inspector */
+    .inspector-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; }
+    .inspector-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
+    .inspector-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    .inspector-table td:first-child { font-weight: 600; color: var(--text-muted); width: 35%; }
+
+    /* Assertion Explorer */
+    .assertion-item {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+    .assertion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .assertion-badge-pass { background: var(--success-light); color: var(--success); font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+    .assertion-badge-fail { background: var(--danger-light); color: var(--danger); font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+
+    /* Screenshot Preview & Modal */
+    .preview-container { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #000; position: relative; }
+    .preview-img { width: 100%; height: auto; max-height: 280px; object-fit: contain; display: block; transition: transform 0.2s; }
+    .preview-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .preview-btn-group { display: flex; gap: 6px; }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.75);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+    .modal-card {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+    .modal-img { max-width: 100%; max-height: 75vh; object-fit: contain; }
+
+    /* Terminal & Observations Log */
+    .terminal-box {
+      background: #0F172A;
+      color: #E2E8F0;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 0.75rem;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      height: 140px;
+      overflow-y: auto;
+      line-height: 1.45;
+    }
+    .log-row { margin-bottom: 2px; }
+    .log-row.info { color: #38BDF8; }
+    .log-row.obs { color: #C084FC; }
+    .log-row.pass { color: #4ADE80; }
+    .log-row.fail { color: #F87171; }
+    .log-row.warn { color: #FBBF24; }
+
+    /* Test History & Comparison View */
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .history-table th { background: var(--surface-subtle); padding: 10px 12px; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    .history-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .history-table tr:hover { background: #FAFAFA; }
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+
+    /* Comparison Modal */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; max-height: 60vh; overflow-y: auto; }
+    .compare-col { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface-subtle); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Compact Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="logo-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>CloudQA</span>
+        </div>
+        <span class="brand-title">Intelligent Test Automation Engine</span>
+      </div>
+
+      <div class="nav-tabs">
+        <button id="tabStudio" class="nav-tab active" onclick="switchView('studio')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          <span>Test Studio</span>
+        </button>
+        <button id="tabHistory" class="nav-tab" onclick="switchView('history')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="9"></circle></svg>
+          <span>Test History</span>
+          <span id="historyCountBadge" style="background:#E2E8F0; padding:1px 6px; border-radius:99px; font-size:0.7rem;">0</span>
+        </button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span id="backendStatusPill" class="status-pill">
+          <span class="dot"></span>
+          <span>Engine Online</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- VIEW 1: TEST STUDIO -->
+    <div id="viewStudio" class="view-panel active">
+      <div class="studio-grid">
+
+        <!-- LEFT COLUMN (60%): Configuration, AI Interpretation & Code Editor -->
+        <div class="col-left">
+
+          <!-- Card 1: Test Case Builder -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                <span>1. Test Case Builder</span>
+              </span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Hybrid Engine: Semantic Locators &amp; Playwright</span>
+            </div>
+
+            <!-- Target URL -->
+            <div class="form-group">
+              <label class="form-label" for="urlInput">
+                <span>Target Website URL</span>
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:400;">HTTP &amp; HTTPS web targets</span>
+              </label>
+              <div class="input-wrapper">
+                <input id="urlInput" class="input-text" type="text" value="https://example.com" placeholder="https://app.example.com" oninput="validateUrlInput()" style="padding-right:110px;" />
+                <span id="urlValidateText" class="url-validation-pill valid" style="display:inline-flex;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Valid URL</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Plain-English Test Prompt -->
+            <div class="form-group">
+              <label class="form-label">
+                <span>Natural-Language Test Instruction</span>
+                <span id="charCount" style="color:var(--text-muted); font-size:0.72rem;">64 characters</span>
+              </label>
+              <textarea id="testCaseInput" class="textarea-text" placeholder="Describe the test actions and assertions in natural language..." oninput="updateCharCount()">Navigate to https://example.com and assert text 'documentation examples' is visible</textarea>
+            </div>
+
+            <!-- 6 Scenario Preset Cards -->
+            <div class="form-group">
+              <label class="form-label">
+                <span>Select Scenario Preset</span>
+                <span style="font-size:0.72rem; color:var(--text-muted);">Technical Audit Scenarios</span>
+              </label>
+              <div class="presets-grid">
+                <div class="preset-card active" onclick="applyPreset('generic', this)">
+                  <div class="preset-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    <span>1. Generic Web</span>
+                  </div>
+                  <div class="preset-desc">Example.com text check</div>
+                </div>
+
+                <div class="preset-card" onclick="applyPreset('auth', this)">
+                  <div class="preset-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>2. Auth & Dashboard</span>
+                  </div>
+                  <div class="preset-desc">Local login fixture</div>
+                </div>
+
+                <div class="preset-card" onclick="applyPreset('phptravels', this)">
+                  <div class="preset-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                    <span>3. PHPTRAVELS</span>
+                  </div>
+                  <div class="preset-desc">Customer demo flow</div>
+                </div>
+
+                <div class="preset-card" onclick="applyPreset('negative', this)">
+                  <div class="preset-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                    <span>4. Negative Test</span>
+                  </div>
+                  <div class="preset-desc">Missing heading check</div>
+                </div>
+
+                <div class="preset-card" onclick="applyPreset('unseen', this)">
+                  <div class="preset-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <span>5. Unseen Flow</span>
+                  </div>
+                  <div class="preset-desc">Multi-step form flow</div>
+                </div>
+
+                <div class="preset-card" onclick="applyPreset('navigation', this)">
+                  <div class="preset-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <span>6. Navigation</span>
+                  </div>
+                  <div class="preset-desc">Page link transitions</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advanced Execution Settings Collapsible -->
+            <div class="advanced-bar">
+              <button type="button" class="toggle-advanced" onclick="toggleAdvancedSettings()">
+                <svg id="advArrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <span>Advanced Browser & Timeout Settings</span>
+              </button>
+              <div id="advancedFields" class="advanced-fields">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label"><span>Timeout (ms)</span></label>
+                  <input id="timeoutInput" class="input-text" type="number" value="15000" min="2000" step="1000" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label"><span>Category</span></label>
+                  <select id="categorySelect" class="select-text">
+                    <option value="Functional">Functional</option>
+                    <option value="Smoke">Smoke</option>
+                    <option value="Regression">Regression</option>
+                    <option value="Security">Security</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0; display:flex; flex-direction:column; justify-content:center;">
+                  <label class="form-label"><span>Headless Mode</span></label>
+                  <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; cursor:pointer; margin-top:6px;">
+                    <input id="headlessCheckbox" type="checkbox" checked />
+                    <span>Run Headless</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Generate Plan, Execute, or Combined -->
+            <div class="actions-bar">
+              <button id="btnGenerateOnly" class="btn btn-outline" onclick="generatePlanOnly()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>Generate Plan</span>
+              </button>
+
+              <button id="btnExecuteReviewed" class="btn btn-success-outline" onclick="executeReviewedPlan()" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Execute Reviewed Plan</span>
+              </button>
+
+              <button id="btnRunCombined" class="btn btn-primary" onclick="runGenerateAndExecute()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <span>Generate & Execute</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: "What AI Understood" (Interpretation Panel) -->
+          <div id="aiInterpretationCard" class="interpretation-box" style="display:none;">
+            <div class="interp-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              <span>What AI Understood</span>
+            </div>
+
+            <div class="interp-grid">
+              <div class="interp-item" style="grid-column: span 2;">
+                <div class="interp-label">Main Automation Goal</div>
+                <div id="interpGoal" class="interp-value">-</div>
+              </div>
+
+              <div class="interp-item">
+                <div class="interp-label">Identified Entities & Elements</div>
+                <div id="interpEntities" class="entity-tags">-</div>
+              </div>
+
+              <div class="interp-item">
+                <div class="interp-label">Expected Assertions & Outcome</div>
+                <div id="interpOutcome" class="interp-value">-</div>
+              </div>
+
+              <div class="interp-item">
+                <div class="interp-label">Required Runtime Data & Variables</div>
+                <div id="interpData" class="interp-value">-</div>
+              </div>
+
+              <div class="interp-item">
+                <div class="interp-label">Potential Obstacles & Risk Mitigations</div>
+                <div id="interpObstacles" class="interp-value">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: AI-Generated Structured JSON Plan -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                <span>2. AI-Generated Test Plan</span>
+                <span id="planValidationPill" style="display:none; font-size:0.72rem; padding:2px 8px; border-radius:99px; background:var(--success-light); color:var(--success); border:1px solid var(--success-border); font-weight:600;">✔ Validated by Zod</span>
+                <span id="stepCountPill" style="display:none; font-size:0.72rem; padding:2px 8px; border-radius:99px; background:var(--primary-light); color:var(--primary); font-weight:600;">0 Actions</span>
+              </span>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="copyJsonPlan()">Copy</button>
+                <button type="button" class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="downloadJsonPlan()">Download</button>
+              </div>
+            </div>
+
+            <!-- Light Code Viewer with Line Numbers -->
+            <div class="editor-container">
+              <div class="editor-toolbar">
+                <span>testPlan.json (Strict Declarative Format)</span>
+                <span id="editorStatus">Awaiting generation...</span>
+              </div>
+              <div class="editor-body">
+                <div id="codeLineNumbers" class="line-numbers">1<br>2<br>3</div>
+                <div id="codeContent" class="code-content">// Generate plan or click "Generate & Execute" to view structured JSON...</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN (40%): Live Execution Monitoring, Timeline, Assertion Explorer & Preview -->
+        <div class="col-right">
+
+          <!-- Card 1: Execution Result Summary Banner -->
+          <div id="resultSummaryBanner" class="result-card">
+            <div class="result-header">
+              <span id="resultStatusText">TEST RESULT: PASS</span>
+              <span id="resultDurationText">0.0s</span>
+            </div>
+            <div id="resultExplanation" style="font-size:0.8rem; margin-top:6px; font-weight:500;"></div>
+            <div class="metrics-row">
+              <div class="metric-col">
+                <span style="color:var(--text-muted); font-size:0.7rem;">EXECUTION STEPS</span>
+                <span id="metricSteps" class="metric-val">0 / 0</span>
+              </div>
+              <div class="metric-col">
+                <span style="color:var(--text-muted); font-size:0.7rem;">ASSERTIONS</span>
+                <span id="metricAssertions" class="metric-val">0 / 0</span>
+              </div>
+              <div class="metric-col">
+                <span style="color:var(--text-muted); font-size:0.7rem;">DURATION</span>
+                <span id="metricDuration" class="metric-val">0.0s</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button id="btnDownloadReport" class="btn btn-outline" style="padding:5px 10px; font-size:0.75rem; background:#fff;" onclick="downloadFullReport()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Download Report</span>
+              </button>
+              <button class="btn btn-outline" style="padding:5px 10px; font-size:0.75rem; background:#fff;" onclick="runGenerateAndExecute()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                <span>Retry Test</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Vertical Execution Timeline -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                <span>3. Execution Timeline</span>
+              </span>
+              <span id="timelineStatusPill" style="font-size:0.72rem; color:var(--text-muted);">Idle</span>
+            </div>
+
+            <div id="timelineContainer" class="timeline">
+              <div style="color:var(--text-muted); font-size:0.8rem; padding:10px 0;">
+                No execution started. Click <strong>Generate & Execute</strong> to begin browser automation.
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Intelligent Locator Inspector -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>4. Locator Inspector</span>
+              </span>
+              <span id="inspectorStepBadge" style="font-size:0.72rem; color:var(--primary); font-weight:600;">Active Step</span>
+            </div>
+
+            <div id="inspectorEmptyNotice" style="color:var(--text-muted); font-size:0.78rem;">
+              Select a step in the timeline to inspect element attributes, accessibility, and disambiguation diagnostics.
+            </div>
+
+            <table id="inspectorTable" class="inspector-table" style="display:none;">
+              <tbody>
+                <tr><td>Element Role</td><td id="inspRole">-</td></tr>
+                <tr><td>Accessible Name</td><td id="inspName">-</td></tr>
+                <tr><td>Matched Elements</td><td id="inspCount">-</td></tr>
+                <tr><td>Primary Strategy</td><td id="inspStrategy">-</td></tr>
+                <tr><td>State & Visibility</td><td id="inspState">-</td></tr>
+                <tr><td>Attempted Alternatives</td><td id="inspAlternatives">-</td></tr>
+                <tr><td>Disambiguation / Recovery</td><td id="inspDiagnostics">-</td></tr>
+              </tbody>
+            </table>
+
+            <!-- Task 1 C# Scoring Diagnostics Link -->
+            <div id="task1ScoringBox" style="margin-top:10px; padding:8px 10px; background:var(--surface-subtle); border-radius:6px; font-size:0.74rem; display:none;">
+              <span style="font-weight:600; color:var(--primary);">Task 1 Confidence Scoring Diagnostics Available</span>
+              <div id="task1ScoreDetails" style="color:var(--text-muted); margin-top:4px;"></div>
+            </div>
+          </div>
+
+          <!-- Card 4: Assertion Explorer -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span>5. Assertion Explorer</span>
+              </span>
+              <span id="assertionTallyPill" style="font-size:0.72rem; color:var(--text-muted);">0 Assertions</span>
+            </div>
+
+            <div id="assertionListContainer">
+              <div style="color:var(--text-muted); font-size:0.8rem;">
+                Assertion evidence and DOM verification records will appear here after execution.
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: Live Browser Screenshot Preview -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span>6. Live Browser State Preview</span>
+              </span>
+              <div id="screenshotTabGroup" style="display:none; gap:4px;">
+                <button id="btnShotFinal" class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="switchScreenshot('final')">Final State</button>
+                <button id="btnShotInitial" class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="switchScreenshot('initial')">Initial State</button>
+              </div>
+            </div>
+
+            <div id="previewContainer" class="preview-container" style="display:none;">
+              <img id="browserScreenshotImg" class="preview-img" src="" alt="Live Browser View" />
+              <div class="preview-toolbar">
+                <span id="screenshotCaptionText">Captured Screenshot</span>
+                <div class="preview-btn-group">
+                  <button type="button" class="btn btn-outline" style="padding:3px 6px; font-size:0.7rem;" onclick="zoomScreenshot(1.2)">Zoom +</button>
+                  <button type="button" class="btn btn-outline" style="padding:3px 6px; font-size:0.7rem;" onclick="zoomScreenshot(0.8)">Zoom -</button>
+                  <button type="button" class="btn btn-outline" style="padding:3px 6px; font-size:0.7rem;" onclick="resetScreenshotZoom()">Reset</button>
+                  <button type="button" class="btn btn-primary" style="padding:3px 8px; font-size:0.7rem;" onclick="openScreenshotModal()">Expand</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="previewEmptyPlaceholder" style="color:var(--text-muted); font-size:0.8rem;">
+              Real Playwright screenshots are captured automatically on navigation, assertions, and failures.
+            </div>
+          </div>
+
+          <!-- Card 6: Live Terminal & Observation Stream -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-head">
+              <span class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                <span>7. Browser Event Stream</span>
+              </span>
+              <span id="obsBadge" style="font-size:0.72rem; color:var(--text-muted);">Idle</span>
+            </div>
+
+            <div id="terminalStream" class="terminal-box">
+              <div class="log-row info">[Engine Ready] Waiting for test execution command...</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 2: TEST HISTORY & RUN COMPARISON -->
+    <div id="viewHistory" class="view-panel">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>Persisted Test Execution History</span>
+          </span>
+          <div style="display:flex; gap:8px;">
+            <button id="btnCompareSelected" class="btn btn-primary" style="padding:6px 12px; font-size:0.8rem;" onclick="openCompareModal()" disabled>
+              <span>Compare Selected (0/2)</span>
+            </button>
+            <button class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;" onclick="loadReportsHistory()">
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <input id="historySearchInput" class="input-text" type="text" placeholder="Search by test description or URL..." style="max-width:300px;" oninput="filterHistoryTable()" />
+          
+          <select id="historyStatusFilter" class="select-text" style="max-width:140px;" onchange="filterHistoryTable()">
+            <option value="ALL">All Statuses</option>
+            <option value="PASS">PASS only</option>
+            <option value="FAIL">FAIL only</option>
+            <option value="BLOCKED">BLOCKED only</option>
+          </select>
+
+          <select id="historyDomainFilter" class="select-text" style="max-width:180px;" onchange="filterHistoryTable()">
+            <option value="ALL">All Websites</option>
+          </select>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" disabled /></th>
+                <th style="width:160px;">Date & Time</th>
+                <th>Test Case Description</th>
+                <th>Target Website</th>
+                <th style="width:90px;">Duration</th>
+                <th style="width:90px;">Status</th>
+                <th style="width:100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">Loading persisted reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Fullscreen Screenshot Modal -->
+  <div id="screenshotModal" class="modal-overlay" onclick="closeScreenshotModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-bottom:1px solid var(--border);">
+        <span style="font-weight:600; font-size:0.95rem;">Browser State Screenshot</span>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="closeScreenshotModal()">Close ✕</button>
+      </div>
+      <div style="padding:14px; text-align:center; overflow:auto;">
+        <img id="modalImg" class="modal-img" src="" alt="Full Preview" />
+      </div>
+      <div style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+        <a id="modalDownloadBtn" href="#" download="screenshot.png" class="btn btn-primary" style="padding:6px 12px; font-size:0.8rem; text-decoration:none;">Download PNG</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Run Comparison Modal -->
+  <div id="compareModal" class="modal-overlay" onclick="closeCompareModal(event)">
+    <div class="modal-card" style="width:950px;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-bottom:1px solid var(--border);">
+        <span style="font-weight:600; font-size:0.95rem;">Side-by-Side Test Execution Comparison</span>
+        <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="closeCompareModal()">Close ✕</button>
+      </div>
+      <div id="compareGrid" class="compare-grid">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script>
+    // State
+    let currentPlan = null;
+    let currentInterpretation = null;
+    let currentReport = null;
+    let selectedStepIndex = null;
+    let currentZoom = 1;
+    let allPersistedReports = [];
+    let selectedForCompare = [];
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      checkServerHealth();
+      validateUrlInput();
+      updateCharCount();
+      loadReportsHistory();
+      loadTask1ScoringData();
+    });
+
+    // View Navigation
+    function switchView(viewName) {
+      document.getElementById('tabStudio').classList.toggle('active', viewName === 'studio');
+      document.getElementById('tabHistory').classList.toggle('active', viewName === 'history');
+      document.getElementById('viewStudio').classList.toggle('active', viewName === 'studio');
+      document.getElementById('viewHistory').classList.toggle('active', viewName === 'history');
+      if (viewName === 'history') {
+        loadReportsHistory();
+      }
+    }
+
+    // Health Check
+    async function checkServerHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          document.getElementById('backendStatusPill').innerHTML = `<span class="dot"></span><span>Engine Online</span>`;
+        }
+      } catch {
+        const pill = document.getElementById('backendStatusPill');
+        pill.className = 'status-pill';
+        pill.style.background = 'var(--danger-light)';
+        pill.style.color = 'var(--danger)';
+        pill.style.borderColor = 'var(--danger-border)';
+        pill.innerHTML = `<span class="dot" style="background:var(--danger); animation:none;"></span><span>Server Offline</span>`;
+      }
+    }
+
+    // Inputs Validation & Pointers
+    function validateUrlInput() {
+      const val = document.getElementById('urlInput').value.trim();
+      const badge = document.getElementById('urlValidateText');
+      if (!badge) return;
+      if (!val) {
+        badge.style.display = 'none';
+        return;
+      }
+      try {
+        const parsed = new URL(val);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+          badge.className = 'url-validation-pill valid';
+          badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Valid URL</span>`;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.className = 'url-validation-pill invalid';
+          badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span>Invalid URL</span>`;
+          badge.style.display = 'inline-flex';
+        }
+      } catch {
+        badge.className = 'url-validation-pill invalid';
+        badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span>Invalid URL</span>`;
+        badge.style.display = 'inline-flex';
+      }
+    }
+
+    function updateCharCount() {
+      const val = document.getElementById('testCaseInput').value;
+      document.getElementById('charCount').textContent = `${val.length} characters`;
+    }
+
+    function toggleAdvancedSettings() {
+      const fields = document.getElementById('advancedFields');
+      const arrow = document.getElementById('advArrow');
+      const isOpen = fields.style.display === 'grid';
+      fields.style.display = isOpen ? 'none' : 'grid';
+      arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+
+    // Scenario Presets
+    function applyPreset(presetType, element) {
+      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      if (element) element.classList.add('active');
+
+      const urlInput = document.getElementById('urlInput');
+      const testInput = document.getElementById('testCaseInput');
+      const catSelect = document.getElementById('categorySelect');
+
+      if (presetType === 'generic') {
+        urlInput.value = 'https://example.com';
+        testInput.value = "Navigate to https://example.com and assert text 'documentation examples' is visible";
+        catSelect.value = 'Smoke';
+      } else if (presetType === 'auth') {
+        urlInput.value = window.location.origin + '/fixtures/local_login.html';
+        testInput.value = "Log in as username admin and password password123, then verify customer dashboard is displayed";
+        catSelect.value = 'Functional';
+      } else if (presetType === 'phptravels') {
+        urlInput.value = 'https://phptravels.com/demo';
+        testInput.value = "Get customer demo access, discover customer credentials, log in as a customer, and verify that the customer dashboard is displayed";
+        catSelect.value = 'Regression';
+      } else if (presetType === 'negative') {
+        urlInput.value = window.location.origin + '/fixtures/local_login.html';
+        testInput.value = "Assert heading 'NonExistentSecretAdminDashboard123' is visible";
+        catSelect.value = 'Functional';
+      } else if (presetType === 'unseen') {
+        urlInput.value = window.location.origin + '/fixtures/local_login.html';
+        testInput.value = "Enter admin into username, enter password123 into password, click login, and verify text 'Active Travel Bookings: 2' is visible";
+        catSelect.value = 'Functional';
+      } else if (presetType === 'navigation') {
+        urlInput.value = 'https://example.com';
+        testInput.value = "Navigate to https://example.com, verify heading 'Example Domain', and wait for 2 seconds";
+        catSelect.value = 'Smoke';
+      }
+
+      validateUrlInput();
+      updateCharCount();
+    }
+
+    // Append to Terminal Log
+    function appendTerminalLog(message, type = 'info') {
+      const stream = document.getElementById('terminalStream');
+      const row = document.createElement('div');
+      row.className = `log-row ${type}`;
+      const time = new Date().toLocaleTimeString();
+      row.textContent = `[${time}] ${message}`;
+      stream.appendChild(row);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    // 1. Generate Plan Only
+    async function generatePlanOnly() {
+      const url = document.getElementById('urlInput').value.trim();
+      const testCase = document.getElementById('testCaseInput').value.trim();
+      if (!url || !testCase) {
+        alert('Please specify both a target URL and test case instruction.');
+        return;
+      }
+
+      const btnGen = document.getElementById('btnGenerateOnly');
+      btnGen.disabled = true;
+      btnGen.innerHTML = '<span>⏳ Planning...</span>';
+      appendTerminalLog(`Generating structured plan with AI for ${url}...`, 'info');
+
+      try {
+        const res = await fetch('/api/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, testCase })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentPlan = data.plan;
+          currentInterpretation = data.interpretation;
+          displayAiInterpretation(data.interpretation);
+          renderJsonEditor(data.plan);
+          document.getElementById('btnExecuteReviewed').disabled = false;
+          appendTerminalLog(`Plan validated by Zod (${data.plan.steps.length} actions). Ready for review.`, 'pass');
+        } else {
+          appendTerminalLog(`Planning failed: ${data.error}`, 'fail');
+          alert(`Plan generation failed: ${data.error}`);
+        }
+      } catch (err) {
+        appendTerminalLog(`Network error: ${err.message}`, 'fail');
+      } finally {
+        btnGen.disabled = false;
+        btnGen.innerHTML = `<span>Generate Plan</span>`;
+      }
+    }
+
+    // 2. Execute Reviewed Plan
+    async function executeReviewedPlan() {
+      if (!currentPlan) return;
+      executeWithStream(null, null, JSON.stringify(currentPlan));
+    }
+
+    // 3. Combined Generate & Execute
+    async function runGenerateAndExecute() {
+      const url = document.getElementById('urlInput').value.trim();
+      const testCase = document.getElementById('testCaseInput').value.trim();
+      if (!url || !testCase) {
+        alert('Please specify both a target URL and test case instruction.');
+        return;
+      }
+      executeWithStream(url, testCase, null);
+    }
+
+    // Core SSE Execution Pipeline
+    function executeWithStream(url, testCase, planJson) {
+      const btnCombined = document.getElementById('btnRunCombined');
+      const btnExecute = document.getElementById('btnExecuteReviewed');
+      const btnGen = document.getElementById('btnGenerateOnly');
+      const timeout = document.getElementById('timeoutInput').value;
+      const headless = document.getElementById('headlessCheckbox').checked;
+      const category = document.getElementById('categorySelect').value;
+
+      btnCombined.disabled = true;
+      btnExecute.disabled = true;
+      btnGen.disabled = true;
+      btnCombined.innerHTML = '<span>⏳ Running Playwright...</span>';
+
+      // Reset panels
+      document.getElementById('timelineContainer').innerHTML = '';
+      document.getElementById('assertionListContainer').innerHTML = '';
+      document.getElementById('resultSummaryBanner').style.display = 'none';
+      document.getElementById('previewContainer').style.display = 'none';
+      document.getElementById('previewEmptyPlaceholder').style.display = 'block';
+      document.getElementById('inspectorTable').style.display = 'none';
+      document.getElementById('inspectorEmptyNotice').style.display = 'block';
+      document.getElementById('timelineStatusPill').textContent = 'Executing...';
+      document.getElementById('timelineStatusPill').style.color = 'var(--primary)';
+
+      let query = '';
+      if (planJson) {
+        query = `planJson=${encodeURIComponent(planJson)}&timeout=${timeout}&headless=${headless}&category=${encodeURIComponent(category)}`;
+      } else {
+        query = `url=${encodeURIComponent(url)}&testCase=${encodeURIComponent(testCase)}&timeout=${timeout}&headless=${headless}&category=${encodeURIComponent(category)}`;
+      }
+
+      appendTerminalLog(`Launching execution pipeline (Timeout: ${timeout}ms, Headless: ${headless})...`, 'info');
+      const eventSource = new EventSource(`/api/run-stream?${query}`);
+
+      eventSource.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        if (data.type === 'log') {
+          appendTerminalLog(data.message, 'info');
+        } else if (data.type === 'observation') {
+          appendTerminalLog(data.message, 'obs');
+          document.getElementById('obsBadge').textContent = '● Live DOM Observed';
+        } else if (data.type === 'plan_ready') {
+          currentPlan = data.plan;
+          currentInterpretation = data.interpretation;
+          displayAiInterpretation(data.interpretation);
+          renderJsonEditor(data.plan);
+          initializeTimeline(data.plan.steps);
+        } else if (data.type === 'step_start') {
+          appendTerminalLog(data.message);
+          highlightRunningStep(data.stepIndex);
+        } else if (data.type === 'step_end') {
+          updateTimelineStep(data.step);
+          if (data.step.assertionEvidence) {
+            renderAssertion(data.step.assertionEvidence);
+          }
+        } else if (data.type === 'complete') {
+          eventSource.close();
+          currentReport = data.report;
+          handleExecutionComplete(data.report);
+          btnCombined.disabled = false;
+          btnExecute.disabled = false;
+          btnGen.disabled = false;
+          btnCombined.innerHTML = `<span>Generate & Execute</span>`;
+        } else if (data.type === 'error') {
+          eventSource.close();
+          appendTerminalLog(`Execution halted: ${data.error}`, 'fail');
+          btnCombined.disabled = false;
+          btnExecute.disabled = false;
+          btnGen.disabled = false;
+          btnCombined.innerHTML = `<span>Generate & Execute</span>`;
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource.close();
+        btnCombined.disabled = false;
+        btnExecute.disabled = false;
+        btnGen.disabled = false;
+        btnCombined.innerHTML = `<span>Generate & Execute</span>`;
+      };
+    }
+
+    // Display "What AI Understood"
+    function displayAiInterpretation(interp) {
+      if (!interp) return;
+      document.getElementById('aiInterpretationCard').style.display = 'block';
+      document.getElementById('interpGoal').textContent = interp.mainGoal;
+
+      const entityContainer = document.getElementById('interpEntities');
+      entityContainer.innerHTML = '';
+      if (interp.identifiedEntities && interp.identifiedEntities.length) {
+        interp.identifiedEntities.forEach(ent => {
+          const pill = document.createElement('span');
+          pill.className = 'entity-tag';
+          pill.textContent = `${ent.role || 'el'}: "${ent.name}"`;
+          entityContainer.appendChild(pill);
+        });
+      } else {
+        entityContainer.textContent = 'Standard page navigation';
+      }
+
+      document.getElementById('interpOutcome').textContent = interp.expectedOutcome;
+
+      // Required Data
+      const dataEntries = Object.entries(interp.requiredData || {});
+      if (dataEntries.length) {
+        document.getElementById('interpData').innerHTML = dataEntries.map(([k, v]) => `<code>${k}</code>: ${v}`).join(', ');
+      } else {
+        document.getElementById('interpData').textContent = 'None required';
+      }
+
+      document.getElementById('interpObstacles').textContent = interp.potentialObstacles.join('; ');
+    }
+
+    // Render Light Syntax Highlighted JSON
+    function renderJsonEditor(plan) {
+      const codeBox = document.getElementById('codeContent');
+      const lineBox = document.getElementById('codeLineNumbers');
+      const jsonStr = JSON.stringify(plan, null, 2);
+
+      // Syntax colors
+      const highlighted = jsonStr
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              return `<span class="token-key">${match}</span>`;
+            } else {
+              return `<span class="token-str">${match}</span>`;
+            }
+          } else if (/true|false/.test(match)) {
+            return `<span class="token-bool">${match}</span>`;
+          } else if (/-?\d+/.test(match)) {
+            return `<span class="token-num">${match}</span>`;
+          }
+          return match;
+        });
+
+      codeBox.innerHTML = highlighted;
+
+      const lineCount = jsonStr.split('\n').length;
+      let lineHtml = '';
+      for (let i = 1; i <= lineCount; i++) lineHtml += `${i}<br>`;
+      lineBox.innerHTML = lineHtml;
+
+      document.getElementById('planValidationPill').style.display = 'inline-block';
+      document.getElementById('stepCountPill').style.display = 'inline-block';
+      document.getElementById('stepCountPill').textContent = `${plan.steps.length} Actions`;
+      document.getElementById('editorStatus').textContent = 'Zod Validated';
+    }
+
+    function copyJsonPlan() {
+      if (!currentPlan) return;
+      navigator.clipboard.writeText(JSON.stringify(currentPlan, null, 2));
+      alert('Plan JSON copied to clipboard!');
+    }
+
+    function downloadJsonPlan() {
+      if (!currentPlan) return;
+      const blob = new Blob([JSON.stringify(currentPlan, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `test_plan_${Date.now()}.json`;
+      a.click();
+    }
+
+    // Timeline Rendering
+    function initializeTimeline(steps) {
+      const container = document.getElementById('timelineContainer');
+      container.innerHTML = '';
+
+      steps.forEach((s, idx) => {
+        const stepNum = idx + 1;
+        const el = document.createElement('div');
+        el.className = 'timeline-step';
+        el.id = `step-node-${stepNum}`;
+        el.innerHTML = `
+          <div class="timeline-node" id="step-icon-${stepNum}">${stepNum}</div>
+          <div class="step-card" onclick="selectStepForInspection(${stepNum})">
+            <div class="step-header">
+              <span class="step-action-tag">${s.action}</span>
+              <span id="step-dur-${stepNum}" style="font-size:0.75rem; color:var(--text-muted);">pending</span>
+            </div>
+            <div class="step-desc" id="step-desc-${stepNum}">${s.action === 'navigate' ? s.url : (s.target?.name || s.expectedText || s.value || s.action)}</div>
+            <div class="step-meta">
+              <span id="step-strat-${stepNum}">Awaiting execution...</span>
+              <button type="button" class="step-details-toggle" onclick="event.stopPropagation(); toggleStepDetails(${stepNum})">Details</button>
+            </div>
+            <div class="step-expandable" id="step-expand-${stepNum}">
+              <div id="step-json-${stepNum}"></div>
+            </div>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    function highlightRunningStep(stepNum) {
+      const icon = document.getElementById(`step-icon-${stepNum}`);
+      if (icon) {
+        icon.className = 'timeline-node running';
+      }
+    }
+
+    function updateTimelineStep(step) {
+      const icon = document.getElementById(`step-icon-${step.stepIndex}`);
+      const dur = document.getElementById(`step-dur-${step.stepIndex}`);
+      const strat = document.getElementById(`step-strat-${step.stepIndex}`);
+      const expand = document.getElementById(`step-json-${step.stepIndex}`);
+
+      if (icon) {
+        icon.className = `timeline-node ${step.status.toLowerCase()}`;
+        icon.innerHTML = step.status === 'PASS' ? '✔' : step.status === 'BLOCKED' ? '⚠' : '✖';
+      }
+      if (dur) dur.textContent = `${step.durationMs}ms`;
+      if (strat) strat.textContent = step.strategyUsed ? `${step.strategyUsed.substring(0, 45)}...` : step.details;
+      if (expand) {
+        expand.innerHTML = `
+          <div><strong>Details:</strong> ${step.details}</div>
+          ${step.strategyUsed ? `<div style="margin-top:4px;"><strong>Strategy:</strong> <code>${step.strategyUsed}</code></div>` : ''}
+          ${step.error ? `<div style="margin-top:4px; color:var(--danger);"><strong>Error:</strong> ${step.error}</div>` : ''}
+        `;
+      }
+
+      // Default select this step for the inspector
+      selectStepForInspection(step.stepIndex, step);
+    }
+
+    function toggleStepDetails(num) {
+      const el = document.getElementById(`step-expand-${num}`);
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Locator Inspector Selection
+    function selectStepForInspection(stepNum, stepObj) {
+      selectedStepIndex = stepNum;
+      document.getElementById('inspectorStepBadge').textContent = `Step #${stepNum}`;
+      document.getElementById('inspectorEmptyNotice').style.display = 'none';
+      document.getElementById('inspectorTable').style.display = 'table';
+
+      let step = stepObj;
+      if (!step && currentReport && currentReport.steps) {
+        step = currentReport.steps[stepNum - 1];
+      }
+
+      const details = step?.locatorDetails || {};
+      document.getElementById('inspRole').textContent = details.role || 'auto-detected';
+      document.getElementById('inspName').textContent = details.accessibleName || (step?.target?.name || '-');
+      document.getElementById('inspCount').textContent = details.matchedCount !== undefined ? `Exactly ${details.matchedCount} element` : '-';
+      document.getElementById('inspStrategy').textContent = details.strategyUsed || step?.strategyUsed || '-';
+      document.getElementById('inspState').textContent = details.isVisible ? 'Visible (100% interactable)' : 'Computed state evaluated';
+      document.getElementById('inspAlternatives').textContent = details.candidateAttempts ? details.candidateAttempts.join('; ') : 'Direct primary locator';
+      document.getElementById('inspDiagnostics').textContent = details.diagnostics || 'Verified without ambiguity.';
+    }
+
+    // Assertion Explorer Rendering
+    function renderAssertion(evidence) {
+      const container = document.getElementById('assertionListContainer');
+      const item = document.createElement('div');
+      item.className = 'assertion-item';
+      const isPass = evidence.passed;
+      item.innerHTML = `
+        <div class="assertion-header">
+          <strong>${evidence.assertionType}</strong>
+          <span class="${isPass ? 'assertion-badge-pass' : 'assertion-badge-fail'}">${isPass ? 'PASS' : 'FAIL'}</span>
+        </div>
+        <div style="color:var(--text); font-size:0.75rem;">
+          <div><strong>Expected:</strong> <code>${evidence.expectedValue}</code></div>
+          <div><strong>Actual:</strong> <code>${evidence.actualValue}</code></div>
+          <div style="color:var(--text-muted); margin-top:4px;">${evidence.explanation}</div>
+        </div>
+      `;
+      container.appendChild(item);
+
+      const count = container.querySelectorAll('.assertion-item').length;
+      document.getElementById('assertionTallyPill').textContent = `${count} Assertions Verified`;
+    }
+
+    // Complete Execution Handler
+    function handleExecutionComplete(report) {
+      const banner = document.getElementById('resultSummaryBanner');
+      banner.style.display = 'block';
+
+      if (report.overallStatus === 'PASS') {
+        banner.className = 'result-card result-pass';
+        document.getElementById('resultStatusText').textContent = 'TEST RESULT: PASS';
+        document.getElementById('resultExplanation').textContent = `All ${report.steps.length} actions and ${report.assertionsPassed} assertions executed successfully.`;
+      } else if (report.overallStatus === 'BLOCKED') {
+        banner.className = 'result-card result-blocked';
+        document.getElementById('resultStatusText').textContent = 'TEST RESULT: BLOCKED';
+        document.getElementById('resultExplanation').textContent = report.blockedReason || 'Halted due to anti-bot challenge or verification constraint.';
+      } else {
+        banner.className = 'result-card result-fail';
+        document.getElementById('resultStatusText').textContent = 'TEST RESULT: FAIL';
+        document.getElementById('resultExplanation').textContent = report.errorMessage || 'One or more assertions or interactions failed.';
+      }
+
+      const totalSec = (report.totalDurationMs / 1000).toFixed(2);
+      document.getElementById('resultDurationText').textContent = `${totalSec}s`;
+      document.getElementById('metricSteps').textContent = `${report.steps.filter(s => s.status === 'PASS').length} / ${report.steps.length}`;
+      document.getElementById('metricAssertions').textContent = `${report.assertionsPassed} Passed, ${report.assertionsFailed} Failed`;
+      document.getElementById('metricDuration').textContent = `${totalSec}s`;
+
+      document.getElementById('timelineStatusPill').textContent = `Complete (${report.overallStatus})`;
+
+      // Screenshots
+      const shotUrl = report.screenshotOnFailure || report.finalScreenshot;
+      if (shotUrl) {
+        document.getElementById('previewContainer').style.display = 'block';
+        document.getElementById('previewEmptyPlaceholder').style.display = 'none';
+        document.getElementById('browserScreenshotImg').src = shotUrl;
+        document.getElementById('modalImg').src = shotUrl;
+        document.getElementById('modalDownloadBtn').href = shotUrl;
+        document.getElementById('screenshotCaptionText').textContent = report.screenshotOnFailure ? 'Failure State Capture' : 'Final Verification State';
+
+        if (report.initialScreenshot) {
+          document.getElementById('screenshotTabGroup').style.display = 'flex';
+        }
+      }
+
+      loadReportsHistory();
+    }
+
+    function switchScreenshot(which) {
+      if (!currentReport) return;
+      const img = document.getElementById('browserScreenshotImg');
+      const caption = document.getElementById('screenshotCaptionText');
+      if (which === 'initial' && currentReport.initialScreenshot) {
+        img.src = currentReport.initialScreenshot;
+        caption.textContent = 'Initial Navigation State';
+      } else {
+        img.src = currentReport.screenshotOnFailure || currentReport.finalScreenshot;
+        caption.textContent = currentReport.screenshotOnFailure ? 'Failure State' : 'Final State';
+      }
+    }
+
+    // Zoom Controls
+    function zoomScreenshot(factor) {
+      currentZoom *= factor;
+      document.getElementById('browserScreenshotImg').style.transform = `scale(${currentZoom})`;
+    }
+    function resetScreenshotZoom() {
+      currentZoom = 1;
+      document.getElementById('browserScreenshotImg').style.transform = 'scale(1)';
+    }
+    function openScreenshotModal() {
+      document.getElementById('screenshotModal').style.display = 'flex';
+    }
+    function closeScreenshotModal() {
+      document.getElementById('screenshotModal').style.display = 'none';
+    }
+
+    function downloadFullReport() {
+      if (!currentReport) return;
+      const blob = new Blob([JSON.stringify(currentReport, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `execution_report_${Date.now()}.json`;
+      a.click();
+    }
+
+    // History & Compare View
+    async function loadReportsHistory() {
+      try {
+        const res = await fetch('/api/reports');
+        if (!res.ok) return;
+        const data = await res.json();
+        allPersistedReports = data.reports || [];
+        document.getElementById('historyCountBadge').textContent = allPersistedReports.length;
+
+        // Populate Domain filter
+        const domainSelect = document.getElementById('historyDomainFilter');
+        const domains = [...new Set(allPersistedReports.map(r => {
+          try { return new URL(r.baseUrl).hostname; } catch { return 'local'; }
+        }))];
+        domainSelect.innerHTML = `<option value="ALL">All Websites (${domains.length})</option>`;
+        domains.forEach(d => {
+          domainSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+
+        renderHistoryTable(allPersistedReports);
+      } catch (err) {
+        console.warn('Failed loading reports history:', err);
+      }
+    }
+
+    function filterHistoryTable() {
+      const q = document.getElementById('historySearchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('historyStatusFilter').value;
+      const domainFilter = document.getElementById('historyDomainFilter').value;
+
+      const filtered = allPersistedReports.filter(r => {
+        const matchQ = !q || r.testDescription.toLowerCase().includes(q) || r.baseUrl.toLowerCase().includes(q);
+        const matchStatus = statusFilter === 'ALL' || r.overallStatus === statusFilter;
+        let matchDomain = true;
+        if (domainFilter !== 'ALL') {
+          try { matchDomain = new URL(r.baseUrl).hostname === domainFilter; } catch { matchDomain = false; }
+        }
+        return matchQ && matchStatus && matchDomain;
+      });
+
+      renderHistoryTable(filtered);
+    }
+
+    function renderHistoryTable(reports) {
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+      if (!reports.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">No matching execution reports found.</td></tr>`;
+        return;
+      }
+
+      reports.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        const isPass = r.overallStatus === 'PASS';
+        const isBlocked = r.overallStatus === 'BLOCKED';
+        const badgeClass = isPass ? 'assertion-badge-pass' : isBlocked ? 'assertion-badge-pass' : 'assertion-badge-fail';
+        const timeStr = r.startTime ? new Date(r.startTime).toLocaleString() : 'Recent';
+
+        tr.innerHTML = `
+          <td><input type="checkbox" onchange="toggleCompareSelect('${r.filename}', this)" /></td>
+          <td style="color:var(--text-muted); font-size:0.75rem;">${timeStr}</td>
+          <td><strong>${r.testDescription}</strong></td>
+          <td><a href="${r.baseUrl}" target="_blank" style="color:var(--primary); text-decoration:none;">${r.baseUrl}</a></td>
+          <td>${(r.totalDurationMs / 1000).toFixed(2)}s</td>
+          <td><span class="${badgeClass}">${r.overallStatus}</span></td>
+          <td>
+            <button class="btn btn-outline" style="padding:2px 8px; font-size:0.72rem;" onclick="viewHistoryReport('${r.filename}')">View</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleCompareSelect(filename, checkbox) {
+      if (checkbox.checked) {
+        if (selectedForCompare.length >= 2) {
+          checkbox.checked = false;
+          alert('You can compare exactly 2 reports at a time.');
+          return;
+        }
+        selectedForCompare.push(filename);
+      } else {
+        selectedForCompare = selectedForCompare.filter(f => f !== filename);
+      }
+
+      const btn = document.getElementById('btnCompareSelected');
+      btn.disabled = selectedForCompare.length !== 2;
+      btn.textContent = `Compare Selected (${selectedForCompare.length}/2)`;
+    }
+
+    function openCompareModal() {
+      if (selectedForCompare.length !== 2) return;
+      const repA = allPersistedReports.find(r => r.filename === selectedForCompare[0]);
+      const repB = allPersistedReports.find(r => r.filename === selectedForCompare[1]);
+      if (!repA || !repB) return;
+
+      const grid = document.getElementById('compareGrid');
+      grid.innerHTML = `
+        <div class="compare-col">
+          <div style="font-weight:700; margin-bottom:6px;">Run A (${repA.overallStatus})</div>
+          <div><strong>Date:</strong> ${new Date(repA.startTime).toLocaleString()}</div>
+          <div><strong>Duration:</strong> ${(repA.totalDurationMs / 1000).toFixed(2)}s</div>
+          <div><strong>Test:</strong> ${repA.testDescription}</div>
+          <div><strong>URL:</strong> ${repA.baseUrl}</div>
+          <div><strong>Steps:</strong> ${repA.stepsCount}</div>
+          <div><strong>Assertions Passed:</strong> ${repA.assertionsPassed}</div>
+        </div>
+        <div class="compare-col">
+          <div style="font-weight:700; margin-bottom:6px;">Run B (${repB.overallStatus})</div>
+          <div><strong>Date:</strong> ${new Date(repB.startTime).toLocaleString()}</div>
+          <div><strong>Duration:</strong> ${(repB.totalDurationMs / 1000).toFixed(2)}s</div>
+          <div><strong>Test:</strong> ${repB.testDescription}</div>
+          <div><strong>URL:</strong> ${repB.baseUrl}</div>
+          <div><strong>Steps:</strong> ${repB.stepsCount}</div>
+          <div><strong>Assertions Passed:</strong> ${repB.assertionsPassed}</div>
+        </div>
+      `;
+
+      document.getElementById('compareModal').style.display = 'flex';
+    }
+
+    function closeCompareModal() {
+      document.getElementById('compareModal').style.display = 'none';
+    }
+
+    async function viewHistoryReport(filename) {
+      const match = allPersistedReports.find(r => r.filename === filename);
+      if (match && match.data) {
+        currentReport = match.data;
+        currentPlan = match.data.plan;
+        switchView('studio');
+        if (currentPlan) {
+          renderJsonEditor(currentPlan);
+          displayAiInterpretation(generateClientInterpretation(currentPlan));
+        }
+        handleExecutionComplete(match.data);
+      }
+    }
+
+    function generateClientInterpretation(plan) {
+      return {
+        mainGoal: plan.testDescription,
+        identifiedEntities: plan.steps.filter(s => s.target).map(s => ({ role: s.target.role, name: s.target.name || s.target.text || '' })),
+        expectedOutcome: 'Retrieved from persisted execution report archive',
+        proposedStepsCount: plan.steps.length,
+        requiredData: {},
+        potentialObstacles: ['Archived execution report']
+      };
+    }
+
+    // Task 1 C# Scoring Diagnostics Loader
+    async function loadTask1ScoringData() {
+      try {
+        const res = await fetch('/api/task1/reports');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.available && data.reports && data.reports.length > 0) {
+          const latest = data.reports[0].data;
+          const box = document.getElementById('task1ScoringBox');
+          const details = document.getElementById('task1ScoreDetails');
+          const steps = latest.StepResults || latest.stepResults || latest.fieldResults || [];
+          if (steps.length > 0) {
+            box.style.display = 'block';
+            details.innerHTML = steps.map(s => {
+              const name = s.FieldKey || s.fieldName || 'Field';
+              const score = s.ConfidenceScore !== undefined ? s.ConfidenceScore : s.confidenceScore !== undefined ? s.confidenceScore : 1.0;
+              const note = s.HealingNote || s.strategyUsed || 'Heuristic scoring verified';
+              return `• <strong>${name}</strong>: Multi-Heuristic Score <strong>${(score * 100).toFixed(0)}%</strong><div style="font-size:0.7rem; color:#64748B;">${note}</div>`;
+            }).join('<div style="height:4px;"></div>');
+          }
+        }
+      } catch {}
+    }
+  </script>
+</body>
+</html>

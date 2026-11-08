@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mutated Form - Changed IDs and CSS Classes</title>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="custom-card">
+            <h3>Account Registration</h3>
+            
+            <!-- First Name with morphed ID and CSS class -->
+            <div class="row-wrapper">
+                <label for="txt_client_first_nm_991" class="label-heading-v2">First Name</label>
+                <input id="txt_client_first_nm_991" type="text" name="user_first_nm" class="neon-input-control" placeholder="Your first name" />
+            </div>
+
+            <!-- Gender with morphed radio IDs and classes -->
+            <div class="row-wrapper">
+                <span class="group-label">Gender</span>
+                <div class="radio-pill-group">
+                    <input id="rad_opt_m_882" type="radio" name="sex_category" value="Male" class="pill-radio" />
+                    <label for="rad_opt_m_882" class="pill-label">Male</label>
+
+                    <input id="rad_opt_f_883" type="radio" name="sex_category" value="Female" class="pill-radio" />
+                    <label for="rad_opt_f_883" class="pill-label">Female</label>
+
+                    <input id="rad_opt_t_884" type="radio" name="sex_category" value="Transgender" class="pill-radio" />
+                    <label for="rad_opt_t_884" class="pill-label">Transgender</label>
+                </div>
+            </div>
+
+            <!-- State with morphed select ID and class -->
+            <div class="row-wrapper">
+                <label for="sel_loc_jurisdiction_773" class="label-heading-v2">State</label>
+                <select id="sel_loc_jurisdiction_773" name="geo_province" class="neon-dropdown-picker">
+                    <option value="">-- Choose Territory --</option>
+                    <option value="Afganistan">Afganistan</option>
+                    <option value="United Arab Emirates">United Arab Emirates</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United States">United States</option>
+                    <option value="Zimbabwe">Zimbabwe</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

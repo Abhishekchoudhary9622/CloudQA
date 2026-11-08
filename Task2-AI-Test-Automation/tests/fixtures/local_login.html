@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Portal - Secure Login</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; display: flex; justify-content: center; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 32px; width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    h1 { font-size: 1.5rem; margin-bottom: 20px; color: #38bdf8; }
+    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.9rem; color: #94a3b8; }
+    input { background: #090d16; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 1rem; }
+    input:focus { border-color: #38bdf8; outline: none; }
+    button { background: #38bdf8; color: #0f172a; font-weight: 700; border: none; border-radius: 8px; padding: 12px; font-size: 1rem; cursor: pointer; margin-top: 8px; width: 100%; }
+    button:hover { background: #0ea5e9; }
+    .alert { padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem; }
+    .alert-error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
+    .alert-success { background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #22c55e; }
+    .dashboard-panel { display: none; }
+    .stat-box { background: #090d16; border: 1px solid #334155; border-radius: 8px; padding: 16px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- Login Form View -->
+    <div id="loginView">
+      <h1 id="portalHeading">Customer Portal Login</h1>
+      <div id="loginAlert" style="display: none;" class="alert alert-error" role="alert"></div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required />
+        </div>
+        <button type="submit" id="loginBtn" role="button">Login</button>
+      </form>
+    </div>
+
+    <!-- Dashboard View (Revealed after successful login) -->
+    <div id="dashboardView" class="dashboard-panel">
+      <h1 id="dashboardHeading" role="heading">Customer Dashboard</h1>
+      <div class="alert alert-success" role="status">Welcome back, admin! Your customer account is active.</div>
+      <div class="stat-box">
+        <h3>Active Travel Bookings: 2</h3>
+        <p style="color: #94a3b8; margin-top: 6px;">Confirmation #TRV-89412 - Confirmed</p>
+      </div>
+      <button type="button" style="margin-top: 20px; background: #334155; color: #cbd5e1;" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const alertBox = document.getElementById('loginAlert');
+
+      if ((u === 'admin' || u === 'alex.carter@globaltravelcorp.io' || u === 'tomsmith') && (p === 'password123' || p === 'SuperSecretPassword!')) {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'block';
+      } else {
+        alertBox.textContent = 'Invalid credentials. Please enter valid login details.';
+        alertBox.style.display = 'block';
+      }
+    }
+
+    function logout() {
+      document.getElementById('dashboardView').style.display = 'none';
+      document.getElementById('loginView').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+    }
+  </script>
+</body>
+</html>
+

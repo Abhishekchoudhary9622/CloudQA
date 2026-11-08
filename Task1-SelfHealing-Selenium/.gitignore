@@ -1,0 +1,20 @@
+## Build and output directories
+bin/
+obj/
+out/
+dist/
+
+## Visual Studio & JetBrains caches
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Keep sample reports and screenshots folders
+Screenshots/*
+!Screenshots/.gitkeep
+Reports/*
+!Reports/.gitkeep
+

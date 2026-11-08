@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mutated Form - Reordered Fields</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <h2>Practice Automation Form - Mutated Order</h2>
+        <form id="reordered-form">
+            <!-- REORDERED: State dropdown is now FIRST -->
+            <div class="section-region" id="region-state">
+                <label for="state_reordered" class="field-title">State</label>
+                <select id="state_reordered" name="state_region">
+                    <option value="">-- Choose State --</option>
+                    <option value="Afganistan">Afganistan</option>
+                    <option value="United Arab Emirates">United Arab Emirates</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United States">United States</option>
+                    <option value="Zimbabwe">Zimbabwe</option>
+                </select>
+            </div>
+
+            <!-- REORDERED: Gender radio group is now SECOND -->
+            <fieldset class="section-region" id="region-gender">
+                <legend>Gender</legend>
+                <div class="radio-options">
+                    <label>
+                        <input type="radio" id="radio_male" name="gender_selection" value="Male" />
+                        Male
+                    </label>
+                    <label>
+                        <input type="radio" id="radio_female" name="gender_selection" value="Female" />
+                        Female
+                    </label>
+                    <label>
+                        <input type="radio" id="radio_other" name="gender_selection" value="Transgender" />
+                        Transgender
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- REORDERED: First Name is now THIRD -->
+            <div class="section-region" id="region-name">
+                <label for="fname_reordered" class="field-title">First Name</label>
+                <input type="text" id="fname_reordered" name="given_name" placeholder="Enter given name" />
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
