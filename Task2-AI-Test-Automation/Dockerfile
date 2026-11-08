@@ -24,3 +24,4 @@ EXPOSE 10000
 
 # Start the Express application
 CMD ["npm", "run", "server"]
+

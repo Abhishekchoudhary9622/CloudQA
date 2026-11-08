@@ -3,3 +3,4 @@ dist
 .env
 screenshots/*.png
 reports/*.json
+
