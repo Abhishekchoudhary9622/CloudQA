@@ -1,3 +1,7 @@
+# Environment secrets
+.env
+!.env.example
+
 ## Build and output directories
 bin/
 obj/
@@ -17,4 +21,3 @@ Screenshots/*
 !Screenshots/.gitkeep
 Reports/*
 !Reports/.gitkeep
-

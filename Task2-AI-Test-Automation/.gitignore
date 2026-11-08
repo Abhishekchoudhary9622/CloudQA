@@ -1,3 +1,7 @@
+# Environment secrets
+.env
+!.env.example
+
 node_modules/
 dist/
 npm-debug.log*
@@ -8,4 +12,3 @@ screenshots/*
 !screenshots/.gitkeep
 reports/*
 !reports/.gitkeep
-

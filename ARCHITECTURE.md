@@ -275,3 +275,4 @@ ColudQA/
     ├── reports/                     # Persisted execution JSON reports
     └── screenshots/                 # Captured browser state screenshots
 ```
+
