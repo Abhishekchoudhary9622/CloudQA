@@ -5,12 +5,15 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-1.49-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
 [![Zod Validated](https://img.shields.io/badge/Zod-Schema_Guarded-3E67B1?logo=zod&logoColor=white)](https://zod.dev/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-cloudqa.onrender.com-00B4D8?logo=render&logoColor=white)](https://cloudqa.onrender.com/)
 [![Tests Passed](https://img.shields.io/badge/Tests-30%2F30_Passed-16A34A?logo=github-actions&logoColor=white)](#test-verification-summary)
 
 This repository contains two production-ready, independent automation projects developed for the **CloudQA Intelligent Test Automation Internship Assignment**:
 
 1. **`Task1-SelfHealing-Selenium/`**: Self-Healing Web Automation in **C# (.NET 8)** using **Selenium WebDriver**, **ChromeDriver**, and **NUnit**. It implements an intelligent multi-heuristic locator engine that tolerates reordered fields, mutated IDs, and changing CSS classes with ambiguity collision detection.
 2. **`Task2-AI-Test-Automation/`**: Generic AI & Heuristic-Powered Browser Automation in **TypeScript**, **Node.js**, and **Playwright**. It accepts plain-English natural language instructions, generates strict declarative action plans guarded by **Zod**, and features dynamic live-DOM observation alongside a light-theme Web UI.
+
+> 🌐 **Live Cloud Deployment**: The Task 2 Web Studio is deployed live at **[https://cloudqa.onrender.com/](https://cloudqa.onrender.com/)** with Google Gemini AI integration and cloud Playwright Chromium automation. Health status: [`https://cloudqa.onrender.com/api/health`](https://cloudqa.onrender.com/api/health).
 
 ---
 
