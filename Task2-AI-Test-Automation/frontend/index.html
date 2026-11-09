@@ -1118,6 +1118,11 @@
     let allPersistedReports = [];
     let selectedForCompare = [];
 
+    // Dynamic API Base URL (Supports local, Render, and external Vercel deployments)
+    const API_BASE = (window.location.hostname.includes('vercel.app') || window.location.protocol === 'file:')
+      ? 'https://cloudqa.onrender.com'
+      : '';
+
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
       checkServerHealth();
@@ -1141,7 +1146,7 @@
     // Health Check
     async function checkServerHealth() {
       try {
-        const res = await fetch('/api/health');
+        const res = await fetch(`${API_BASE}/api/health`);
         if (res.ok) {
           document.getElementById('backendStatusPill').innerHTML = `<span class="dot"></span><span>Engine Online</span>`;
         }
@@ -1260,7 +1265,7 @@
       appendTerminalLog(`Generating structured plan with AI for ${url}...`, 'info');
 
       try {
-        const res = await fetch('/api/plan', {
+        const res = await fetch(`${API_BASE}/api/plan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url, testCase })
@@ -1335,7 +1340,7 @@
       }
 
       appendTerminalLog(`Launching execution pipeline (Timeout: ${timeout}ms, Headless: ${headless})...`, 'info');
-      const eventSource = new EventSource(`/api/run-stream?${query}`);
+      const eventSource = new EventSource(`${API_BASE}/api/run-stream?${query}`);
 
       eventSource.onmessage = (e) => {
         const data = JSON.parse(e.data);
@@ -1609,8 +1614,15 @@
 
       document.getElementById('timelineStatusPill').textContent = `Complete (${report.overallStatus})`;
 
-      // Screenshots
-      const shotUrl = report.screenshotOnFailure || report.finalScreenshot;
+      // Screenshots helper
+      function resolveShot(url) {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return API_BASE + url;
+      }
+
+      const rawShot = report.screenshotOnFailure || report.finalScreenshot;
+      const shotUrl = resolveShot(rawShot);
       if (shotUrl) {
         document.getElementById('previewContainer').style.display = 'block';
         document.getElementById('previewEmptyPlaceholder').style.display = 'none';
@@ -1631,11 +1643,16 @@
       if (!currentReport) return;
       const img = document.getElementById('browserScreenshotImg');
       const caption = document.getElementById('screenshotCaptionText');
+      function resolveShot(url) {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return API_BASE + url;
+      }
       if (which === 'initial' && currentReport.initialScreenshot) {
-        img.src = currentReport.initialScreenshot;
+        img.src = resolveShot(currentReport.initialScreenshot);
         caption.textContent = 'Initial Navigation State';
       } else {
-        img.src = currentReport.screenshotOnFailure || currentReport.finalScreenshot;
+        img.src = resolveShot(currentReport.screenshotOnFailure || currentReport.finalScreenshot);
         caption.textContent = currentReport.screenshotOnFailure ? 'Failure State' : 'Final State';
       }
     }
@@ -1668,7 +1685,7 @@
     // History & Compare View
     async function loadReportsHistory() {
       try {
-        const res = await fetch('/api/reports');
+        const res = await fetch(`${API_BASE}/api/reports`);
         if (!res.ok) return;
         const data = await res.json();
         allPersistedReports = data.reports || [];
@@ -1818,7 +1835,7 @@
     // Task 1 C# Scoring Diagnostics Loader
     async function loadTask1ScoringData() {
       try {
-        const res = await fetch('/api/task1/reports');
+        const res = await fetch(`${API_BASE}/api/task1/reports`);
         if (!res.ok) return;
         const data = await res.json();
         if (data.available && data.reports && data.reports.length > 0) {
